@@ -1,14 +1,14 @@
 require_relative 'card'
 class Deck
-  attr_reader :count, :deck
+  attr_reader :count, :deck, :deck_count
 
   SUITS = ['♥', '♢', '♧', '♤'].freeze
   CARDS = [*(2..10), 'J', 'Q', 'K', 'A'].freeze
 
-  def initialize(count = 1)
+  def initialize(deck_count = 1)
+    @deck_count = deck_count
     @deck = []
-    @count = count
-    @count.times do
+    @deck_count.times do
       SUITS.each do |suit|
         CARDS.each do |card|
           @deck << Card.new(suit, card)
