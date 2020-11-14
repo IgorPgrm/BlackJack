@@ -1,5 +1,5 @@
 class Card
-  attr_reader :suit, :name, :cost
+  attr_reader :suit, :name, :cost, :hiden
 
   def initialize(suit, name)
     @suit = suit
@@ -15,6 +15,16 @@ class Card
       @cost = 10
     when 'A'
       @cost = 11
+    end
+  end
+
+  def face_down
+    symb = '╳'
+    7.times do
+      puts
+      7.times do
+        print symb
+      end
     end
   end
 end
