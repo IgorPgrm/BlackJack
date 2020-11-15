@@ -15,22 +15,14 @@ class Game
   end
 
   def start_game
-    puts '->'
-    @deck.cards.shuffle!.shuffle!.shuffle!.shuffle!
-    @deck.cards.each do |card|
-      puts "#{card.suit} #{card.name}"
-    end
     puts 'Выдаём карты...'
     2.times do
       @players.each do |player|
-        puts "Player: #{player}"
+        puts "Player: #{player.name} +1"
         player.add_card @deck.cards.shift
       end
     end
-
-    puts 'Выданы карты:'
-    @player.show_cards
-    puts "Очки: #{@player.card_weight}"
-    puts "У Диллера: #{@dealer.card_weight}"
   end
+
+
 end
