@@ -44,4 +44,8 @@ class Player
     show_cards_line += bottom
     puts show_cards_line
   end
+
+  def check_weight(cards)
+    cards.each(&:weigth)
+  end
 end
