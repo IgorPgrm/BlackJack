@@ -17,14 +17,4 @@ class Card
       @cost = 11
     end
   end
-
-  def face_down
-    symb = '╳'
-    7.times do
-      puts
-      7.times do
-        print symb
-      end
-    end
-  end
 end
