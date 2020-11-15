@@ -13,9 +13,35 @@ class Player
     @card_weight += card.cost
   end
 
-  def show_cards
+  def show
     @cards.each do |card|
       puts "#{card.suit} #{card.name}"
     end
+  end
+
+  def show_cards
+    show_cards_line = ''
+    top = ''
+    label = ''
+    line = ''
+    bottom = ''
+    puts @cards.length
+    @cards.each do |card|
+      top += '╭╶╶╶╶╶╶╶╶╶╶╮'
+      suitname = "#{card.suit} #{card.name}"
+      label += if card.name == 10
+                 "╵      #{suitname}╵"
+               else
+                 "╵       #{suitname}╵"
+               end
+      line += '╵          ╵'
+      bottom += '╰╶╶╶╶╶╶╶╶╶╶╯'
+    end
+    show_cards_line += "#{top}\n#{label}\n"
+    7.times do
+      show_cards_line += "#{line}\n"
+    end
+    show_cards_line += bottom
+    puts show_cards_line
   end
 end
