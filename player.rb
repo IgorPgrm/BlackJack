@@ -1,16 +1,18 @@
 class Player
-  attr_reader :name, :balance, :cards, :card_weight
+  attr_reader :name, :balance, :cards, :card_weight, :lose, :points
 
   def initialize(name, balance)
+    @lose = false
     @name = name
     @balance = balance
     @cards = []
-    @card_weight = 0
+    @card_weight = '0'
+    @points = 0
   end
 
   def add_card(card)
     @cards << card
-    @card_weight += card.cost
+    check_weight
   end
 
   def show
@@ -28,11 +30,11 @@ class Player
     puts @cards.length
     @cards.each do |card|
       top += '╭╶╶╶╶╶╶╶╶╶╶╮'
-      suitname = "#{card.suit} #{card.name}"
+      suit_name = "#{card.suit} #{card.name}"
       label += if card.name == 10
-                 "╵      #{suitname}╵"
+                 "╵      #{suit_name}╵"
                else
-                 "╵       #{suitname}╵"
+                 "╵       #{suit_name}╵"
                end
       line += '╵          ╵'
       bottom += '╰╶╶╶╶╶╶╶╶╶╶╯'
@@ -45,7 +47,37 @@ class Player
     puts show_cards_line
   end
 
-  def check_weight(cards)
-    cards.each(&:weigth)
+  def check_weight
+    @points = 0
+    aces_indexes = []
+    aces_weight = []
+
+    @cards.each_with_index do |card, index|
+      aces_indexes << index if card.cost == 11
+      @points += card.cost
+    end
+
+    if aces_indexes.empty?
+      aces_weight = @points
+    else
+      case aces_indexes.length
+      when 1
+        aces_weight = [1, 11]
+      when 2
+        aces_weight = [2, 12]
+      when 3
+        aces_weight = [3, 13]
+      end
+      aces_weight.each_with_index do |weight, aces_index|
+        @cards.each_with_index do |card, index|
+          aces_weight[aces_index] += card.cost unless aces_indexes.include?(index)
+        end
+      end
+    end
+
+    @points = aces_weight
+    puts "Общий вес карт: #{points}"
+
+    puts 'Вес карт посчитан'
   end
 end
