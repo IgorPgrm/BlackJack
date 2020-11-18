@@ -23,7 +23,6 @@ class Dealer < Player
     line = ''
     bottom = ''
     symb = '╵╳╳╳╳╳╳╳╳╳╳╵'
-    puts @cards.length
     @cards.each do |card|
       top += '╭╶╶╶╶╶╶╶╶╶╶╮'
       if card == @cards.first
