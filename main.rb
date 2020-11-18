@@ -2,22 +2,22 @@ require_relative 'game'
 class Main
   def initialize
     puts 'Введите своё имя:'
-    input = gets.chomp.to_s
+    #input = gets.chomp.to_s
+    input = "Igor"
     @main_game = Game.new(input, 100)
     show_info
     menu
-  end
-
-  def clear
-    system('clear')
+    puts "Очки: #{@main_game.player.points}"
   end
 
   def show_info
+    @main_game.status_bar
+    @main_game.dealer.dealer_cards_show
     @main_game.player.show_cards
   end
 
   def menu
-    @main_menu = ""
+    @main_menu = ''
   end
 
   def hit

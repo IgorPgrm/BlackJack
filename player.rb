@@ -67,7 +67,7 @@ class Player
       when 3
         aces_weight = [3, 13]
       end
-      aces_weight.each_with_index do |weight, aces_index|
+      aces_weight.each_with_index do |_weight, aces_index|
         @cards.each_with_index do |card, index|
           aces_weight[aces_index] += card.cost unless aces_indexes.include?(index)
         end
