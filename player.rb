@@ -27,7 +27,6 @@ class Player
     label = ''
     line = ''
     bottom = ''
-    puts @cards.length
     @cards.each do |card|
       top += '╭╶╶╶╶╶╶╶╶╶╶╮'
       suit_name = "#{card.suit} #{card.name}"
@@ -75,9 +74,7 @@ class Player
       end
     end
 
+    aces_weight.delete_if { |ace| ace > 21 } if aces_weight.instance_of?(Array) && aces_weight.size.positive?
     @points = aces_weight
-    puts "Общий вес карт: #{points}"
-
-    puts 'Вес карт посчитан'
   end
 end
