@@ -2,7 +2,7 @@ require_relative 'card'
 class Deck
   attr_reader :count, :cards, :deck_count
 
-  SUITS = ['♥', '♢', '♧', '♤'].freeze
+  SUITS = ['♥', '♦', '♣', '♠'].freeze
   CARDS = [*(2..10), 'J', 'Q', 'K', 'A'].freeze
 
   def initialize(deck_count = 1)
