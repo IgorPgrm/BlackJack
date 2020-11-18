@@ -15,7 +15,28 @@ class Game
     @status = 0
     @bet = 0
     @status = 0
+    set_bet
     start_game
+  end
+
+  def set_bet
+    clear
+    status_bar
+    if @player.balance.zero?
+      puts 'На балансе нет денег, невозможно изменить ставку'
+      exit
+    end
+    begin
+      puts "Введите сумму ставки от 1 до #{@player.balance}"
+      input = gets.chomp.to_f
+      puts input
+      raise ArgumentError, 'Неправильная сумма ставки!' unless input.positive? && input <= @player.balance.to_f
+
+      @bet = input
+    rescue StandardError => e
+      puts e.message
+      retry
+    end
   end
 
   def clear
@@ -31,7 +52,7 @@ class Game
     if @player.points.instance_of? Array
       print "\u001B[32m#{@player.points.max}\u001B[0m"
     elsif @player.points.instance_of? Integer
-      @player.points.zero? ? "\u001B[31m 0 \u001B[0m" : "\u001B[32m#{@player.points}\u001B[0m"
+      print @player.points.zero? ? "\u001B[31m 0 \u001B[0m" : "\u001B[32m#{@player.points}\u001B[0m"
     end
     print '] Статус:['
     print @status.zero? ? "\u001B[31m#{@status}\u001B[0m" : "\u001B[32m#{@status}\u001B[0m"
