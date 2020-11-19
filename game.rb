@@ -3,7 +3,7 @@ require_relative 'player'
 require_relative 'dealer'
 
 class Game
-  attr_accessor :player, :dealer, :money, :bank, :deck, :bet
+  attr_accessor :player, :dealer, :money, :bank, :deck, :bet, :status
 
   def initialize(player_name, money = 100, deck_count = 1)
     @na = 'N/a'.to_sym
@@ -12,9 +12,8 @@ class Game
     @player = Player.new(player_name, @money)
     @dealer = Dealer.new
     @players = [@player, @dealer]
-    @status = 0
     @bet = 0
-    @status = 0
+    @status = ''
     set_bet
     start_game
   end
@@ -29,7 +28,6 @@ class Game
     begin
       puts "Введите сумму ставки от 1 до #{@player.balance}"
       input = gets.chomp.to_f
-      puts input
       raise ArgumentError, 'Неправильная сумма ставки!' unless input.positive? && input <= @player.balance.to_f
 
       @bet = input
@@ -55,11 +53,13 @@ class Game
       print @player.points.zero? ? "\u001B[31m 0 \u001B[0m" : "\u001B[32m#{@player.points}\u001B[0m"
     end
     print '] Статус:['
-    print @status.zero? ? "\u001B[31m#{@status}\u001B[0m" : "\u001B[32m#{@status}\u001B[0m"
+    print @status.length.zero? ? "\u001B[31m#{@status}\u001B[0m" : "\u001B[32m#{@status}\u001B[0m"
     print "]\n"
   end
 
   def start_game
+    @player.refresh
+    @dealer.refresh
     puts 'Раздача карт...'
     sleep(0.4)
     2.times do
@@ -80,6 +80,26 @@ class Game
   end
 
   def over?
+    @players.each do |player|
+      if player.lose?
+        @status = "Игрок: #{player.name} - проиграл"
+        show_cards
+        return true
+      end
+    end
     false
+  end
+
+  def hit
+    @player.add_card @deck.take_card
+  end
+
+  def show_cards(game_over=false)
+    clear
+    status_bar
+    puts "Карты диллера:\n"
+    game_over ? @dealer.show_cards : @dealer.dealer_cards_show
+    puts "Карты игрока #{@player.name}:\n"
+    @player.show_cards
   end
 end
