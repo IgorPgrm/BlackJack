@@ -3,13 +3,12 @@ require_relative 'player'
 require_relative 'dealer'
 
 class Game
-  attr_accessor :player, :dealer, :money, :bank, :deck, :bet, :status
+  attr_accessor :player, :dealer, :bank, :deck, :bet, :status
 
   def initialize(player_name, money = 100, deck_count = 1)
     @na = 'N/a'.to_sym
-    @money = money
     @deck = Deck.new(deck_count)
-    @player = Player.new(player_name, @money)
+    @player = Player.new(player_name, money)
     @dealer = Dealer.new
     @players = [@player, @dealer]
     @bet = 0
@@ -43,7 +42,7 @@ class Game
 
   def status_bar
     print 'Баланс:['
-    print @money.zero? ? "\u001B[31m 0 \u001B[0m" : "\u001B[32m#{@money}\u001B[0m"
+    print @player.balance.zero? ? "\u001B[31m 0 \u001B[0m" : "\u001B[32m#{@player.balance}\u001B[0m"
     print '] ставка:['
     print @bet.zero? ? "\u001B[31m#{@na}\u001B[0m" : "\u001B[32m#{@bet}\u001B[0m"
     print '] Очки:['
@@ -57,7 +56,19 @@ class Game
     print "]\n"
   end
 
+  def can_play?
+    raise ArgumentError, 'Недостаточно средств на балансе!' if @player.balance <= 0
+    
+    set_bet if @player.balance < @bet
+    true
+  rescue StandardError => e
+    puts e.message
+    false
+  end
+
   def start_game
+    exit unless can_play?
+    @player.balance -= @bet
     @player.refresh
     @dealer.refresh
     puts 'Раздача карт...'
@@ -71,6 +82,8 @@ class Game
         sleep(0.4)
       end
     end
+  rescue StandardError => e
+    puts e.message
   end
 
   def queue
