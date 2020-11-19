@@ -52,13 +52,13 @@ class Game
       print @player.points.zero? ? "\u001B[31m 0 \u001B[0m" : "\u001B[32m#{@player.points}\u001B[0m"
     end
     print '] Статус:['
-    print @status.length.zero? ? "\u001B[31m#{@status}\u001B[0m" : "\u001B[32m#{@status}\u001B[0m"
+    print @status.nil? ? "\u001B[31m#{@status}\u001B[0m" : "\u001B[32m#{@status}\u001B[0m"
     print "]\n"
   end
 
   def can_play?
     raise ArgumentError, 'Недостаточно средств на балансе!' if @player.balance <= 0
-    
+
     set_bet if @player.balance < @bet
     true
   rescue StandardError => e
@@ -105,6 +105,25 @@ class Game
 
   def hit
     @player.add_card @deck.take_card
+  end
+
+  def winning
+    if !@player.lose? && !@dealer.lose?
+      return @player if @player.points > @dealer.points
+      return @dealer if @player.points < @dealer.points
+      return nil if @player.points == @dealer.points
+    end
+  end
+
+  def give_bank(winner)
+    if winner.nil?
+      @player.balance += @bet
+      @status = 'Ничья!'
+    else
+      money = @bet * 2
+      winner.balance += money
+      @status = winner.instance_of?(Player) ? "Выиграл +#{money}" : "\u001B[31mПроиграл -#{@bet}\u001B[0m"
+    end
   end
 
   def show_cards(game_over=false)
