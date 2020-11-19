@@ -27,6 +27,10 @@ class Deck
   end
 
   def take_card
-    @cards&.shift
+    if @cards.empty?
+      new_deck(@deck_count)
+    else
+      @cards&.shift
+    end
   end
 end

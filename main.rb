@@ -46,6 +46,8 @@ NGM
       show_info
     when 2
       @main_game.show_cards(true)
+      # >check points
+      new_game_menu
     end
   end
 end
