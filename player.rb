@@ -1,24 +1,35 @@
 class Player
   attr_reader :name, :balance, :cards, :card_weight, :lose, :points
+  attr_accessor :done
 
   def initialize(name, balance)
-    @lose = false
     @name = name
     @balance = balance
-    @cards = []
-    @card_weight = '0'
-    @points = 0
+    refresh
   end
 
   def add_card(card)
-    @cards << card
+    @cards << card unless done
     check_weight
+  end
+
+  def refresh
+    @status = ''
+    @cards = []
+    @lose = false
+    @done = false
+    @card_weight = '0'
+    @points = 0
   end
 
   def show
     @cards.each do |card|
       puts "#{card.suit} #{card.name}"
     end
+  end
+
+  def lose?
+    @points.nil? || @points > 21
   end
 
   def show_cards
@@ -75,6 +86,9 @@ class Player
     end
 
     aces_weight.delete_if { |ace| ace > 21 } if aces_weight.instance_of?(Array) && aces_weight.size.positive?
-    @points = aces_weight
+    @points = aces_weight.max if aces_weight.instance_of?(Array)
+    @points = aces_weight if aces_weight.instance_of?(Integer)
+    @lose = if points.nil?
+            end
   end
 end
