@@ -23,9 +23,9 @@ class Dealer < Player
     line = ''
     bottom = ''
     symb = '╵╳╳╳╳╳╳╳╳╳╳╵'
-    @cards.each do |card|
+    @hands.first.cards.each do |card|
       top += '╭╶╶╶╶╶╶╶╶╶╶╮'
-      if card == @cards.first
+      if card == @hands.first.cards.first
         suit_name = "#{card.suit} #{card.name}"
         label += if card.name == 10
                    "╵      #{suit_name}╵"
