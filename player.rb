@@ -38,5 +38,4 @@ class Player
   def can_double?(bet)
     balance >= bet * 2
   end
-
 end
