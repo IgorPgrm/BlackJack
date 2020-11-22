@@ -4,6 +4,7 @@ require_relative 'dealer'
 
 class Game
   attr_accessor :player, :dealer, :bank, :deck, :bet, :status
+  attr_reader :current_bet
 
   def initialize(player_name, money = 100, deck_count = 1)
     @na = 'N/a'.to_sym
@@ -12,6 +13,7 @@ class Game
     @dealer = Dealer.new
     @players = [@player, @dealer]
     @bet = 0
+    @current_bet = 0
     @status = ''
     set_bet
     start_game
@@ -30,6 +32,7 @@ class Game
       raise ArgumentError, 'Неправильная сумма ставки!' unless input.positive? && input <= @player.balance.to_f
 
       @bet = input
+      @current_bet = input
     rescue StandardError => e
       puts e.message
       retry
@@ -46,10 +49,10 @@ class Game
     print '] ставка:['
     print @bet.zero? ? "\u001B[31m#{@na}\u001B[0m" : "\u001B[32m#{@bet}\u001B[0m"
     print '] Очки:['
-    if @player.points.instance_of? Array
+    if @player.hands.first.points.instance_of? Array
       print "\u001B[32m#{@player.points.max}\u001B[0m"
-    elsif @player.points.instance_of? Integer
-      print @player.points.zero? ? "\u001B[31m 0 \u001B[0m" : "\u001B[32m#{@player.points}\u001B[0m"
+    elsif @player.hands.first.points.instance_of? Integer
+      print @player.hands.first.points.zero? ? "\u001B[31m 0 \u001B[0m" : "\u001B[32m#{@player.hands.first.points}\u001B[0m"
     end
     print '] Статус:['
     print @status.nil? ? "\u001B[31m#{@status}\u001B[0m" : "\u001B[32m#{@status}\u001B[0m"
@@ -94,11 +97,11 @@ class Game
 
   def over?
     @players.each do |player|
-      if player.lose?
-        @status = "Игрок: #{player.name} - проиграл"
-        show_cards
-        return true
-      end
+      next unless player.hands.first.lose?
+
+      @status = "Игрок: #{player.name} - проиграл"
+      show_cards
+      return true
     end
     false
   end
@@ -108,10 +111,16 @@ class Game
   end
 
   def winning
-    if !@player.lose? && !@dealer.lose?
-      return @player if @player.points > @dealer.points
-      return @dealer if @player.points < @dealer.points
-      return nil if @player.points == @dealer.points
+    player_lose = @player.hands.first.lose?
+    dealer_lose = @dealer.hands.first.lose?
+    if !player_lose && !dealer_lose
+      return @player if @player.hands.first.points > @dealer.hands.first.points
+      return @dealer if @player.hands.first.points < @dealer.hands.first.points
+      return nil if @player.hands.first.points == @dealer.hands.first.points
+    elsif player_lose
+      @dealer
+    elsif dealer_lose
+      @player
     end
   end
 
@@ -126,11 +135,11 @@ class Game
     end
   end
 
-  def show_cards(game_over=false)
+  def show_cards(game_over = false)
     clear
     status_bar
     puts "Карты диллера:\n"
-    game_over ? @dealer.show_cards : @dealer.dealer_cards_show
+    game_over ? @dealer.hands.first.cards_show : @dealer.dealer_cards_show
     puts "Карты игрока #{@player.name}:\n"
     @player.show_cards
   end
