@@ -2,7 +2,7 @@ require_relative 'card'
 class Deck
   attr_reader :count, :cards, :deck_count
 
-  SUITS = ['♥', '♦', '♣', '♠'].freeze
+  SUITS = %w[♥ ♦ ♣ ♠].freeze
   CARDS = [*(2..10), 'J', 'Q', 'K', 'A'].freeze
 
   def initialize(deck_count = 1)
@@ -27,8 +27,9 @@ class Deck
   end
 
   def take_card
-    if @cards.empty?
+    if @cards.empty? || @cards.count < 4
       new_deck(@deck_count)
+      take_card
     else
       @cards&.shift
     end
