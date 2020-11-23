@@ -1,8 +1,8 @@
 require_relative 'hand'
 
 class Player
-  attr_reader :name, :lose
-  attr_accessor :done, :balance, :hands
+  attr_reader :name, :lose, :splited
+  attr_accessor :done, :balance, :hands, :current_hand
 
   def initialize(name, balance)
     @name = name
@@ -11,20 +11,20 @@ class Player
   end
 
   def add_card(card)
-    @hands.each do |hand|
-      hand.add_card(card) unless hand.done
-    end
+    @current_hand.add_card card
   end
 
   def refresh
     @hands = []
-    @hands << Hand.new
+    @current_hand = Hand.new
+    @hands << @current_hand
     @status = ''
     @cards = []
     @lose = false
     @done = false
     @card_weight = '0'
     @points = 0
+    @splited = false
   end
 
   def show_cards
@@ -39,6 +39,7 @@ class Player
     new_hand = Hand.new
     new_hand.add_card(@hands.first.cards.pop)
     @hands << new_hand
+    @splited = true
   end
 
   def can_double?(bet)
