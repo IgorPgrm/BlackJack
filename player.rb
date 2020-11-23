@@ -32,7 +32,13 @@ class Player
   end
 
   def can_split?
-    @hands.first.cards.first.cost == @hands.first.cards.last.cost
+    @hands.first.cards.count == 2 && @hands.first.cards.first.cost == @hands.first.cards.last.cost
+  end
+
+  def split
+    new_hand = Hand.new
+    new_hand.add_card(@hands.first.cards.pop)
+    @hands << new_hand
   end
 
   def can_double?(bet)
