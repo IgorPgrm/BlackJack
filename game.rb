@@ -89,13 +89,8 @@ class Game
     puts e.message
   end
 
-  def queue
-    loop do
-      break if over?
-    end
-  end
-
   def over?
+
     @players.each do |player|
       next unless player.hands.first.lose?
 
@@ -104,6 +99,15 @@ class Game
       return true
     end
     false
+  end
+
+  def hand_full
+    @player.current_hand.done!
+    if @player.current_hand == @player.hands.last
+      open_cards
+    else
+      @player.current_hand = @player.hands.last
+    end
   end
 
   def hit
@@ -142,5 +146,78 @@ class Game
     game_over ? @dealer.hands.first.cards_show : @dealer.dealer_cards_show
     puts "Карты игрока #{@player.name}:\n"
     @player.show_cards
+  end
+
+  def new_game_menu
+    puts <<NGM
+    Игра окончена!
+    1 - Начать новую игру?
+    2 - Изменить ставку
+    0 -Выход
+NGM
+    input = gets.chomp.to_i
+    case input
+    when 0
+      exit
+    when 2
+      set_bet
+      start_new_game
+    when 1
+      start_new_game
+    end
+  end
+
+  def start_new_game
+    @bet = @current_bet
+    @status = ''
+    start_game
+    clear
+    show_cards
+    menu
+  end
+
+  def show_info
+    show_cards
+    over? ? new_game_menu : menu
+  end
+
+  def take_card_scr
+    hit
+    clear
+  end
+
+  def open_cards
+    winner = winning
+    give_bank(winner)
+    show_cards(true)
+    new_game_menu
+  end
+
+  def menu
+    puts <<~MENU
+      1 - Взять карту
+      2 - Вскрыть карты
+      3 - Удвоить ставку (+1 карта)
+    MENU
+    puts '4 - Сплит' if @player.can_split?
+    puts '5 - Достаточно' if @player.splited
+    input = gets.chomp.to_i
+    case input
+    when 1
+      take_card_scr
+      show_info
+    when 2
+      open_cards
+    when 3
+      @player.balance -= @main_game.bet
+      @bet *= 2
+      take_card_scr
+      open_cards
+    when 4
+      @player.split
+      show_info
+    when 5
+      hand_full
+    end
   end
 end
