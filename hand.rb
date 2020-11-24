@@ -1,13 +1,17 @@
 class Hand
   attr_reader :done, :cards, :card_weight, :points
+  attr_accessor :bet, :status
 
   def initialize
     @cards = []
     @done = false
+    @bet = 0
   end
 
   def lose?
-    @points.nil? || @points > 21
+    lose = @points.nil? || @points > 21
+    @status = 'Проиграл' if lose
+    lose
   end
 
   def add_card(card)
@@ -41,19 +45,18 @@ class Hand
       show_cards_line += "#{line}\n"
     end
     show_cards_line += bottom
-    puts show_cards_line
+    print show_cards_line
+    puts @lose ? "[#{status}]" : "[#{points}]"
   end
 
   def check_weight
     @points = 0
     aces_indexes = []
     aces_weight = []
-
     @cards.each_with_index do |card, index|
       aces_indexes << index if card.cost == 11
       @points += card.cost
     end
-
     if aces_indexes.empty?
       aces_weight = @points
     else
@@ -64,11 +67,11 @@ class Hand
         end
       end
     end
-
     aces_weight.delete_if { |ace| ace > 21 } if aces_weight.instance_of?(Array) && aces_weight.size.positive?
     @points = aces_weight.max if aces_weight.instance_of?(Array)
     @points = aces_weight if aces_weight.instance_of?(Integer)
-    @lose = true if points.nil? || points > 21
+    @lose = lose?
+    done! if @lose
   end
 
   def aces_weight(count)
