@@ -11,7 +11,8 @@ class Player
   end
 
   def add_card(card)
-    @current_hand.add_card card
+    @current_hand = hands.last if @current_hand.done && @current_hand == hands.first
+    @current_hand.add_card card unless @current_hand.done
   end
 
   def refresh
@@ -32,17 +33,31 @@ class Player
   end
 
   def can_split?
-    @hands.first.cards.count == 2 && @hands.first.cards.first.cost == @hands.first.cards.last.cost
+    two_cards = @hands.first.cards.count == 2
+    cards_cost = @hands.first.cards.first.cost == @hands.first.cards.last.cost
+    can_double?(@current_hand.bet) && two_cards && cards_cost
   end
 
   def split
     new_hand = Hand.new
     new_hand.add_card(@hands.first.cards.pop)
+    new_hand.bet = @current_hand.bet
+    @balance -= @current_hand.bet
     @hands << new_hand
     @splited = true
+    @current_hand.check_weight
   end
 
   def can_double?(bet)
     balance >= bet * 2
+  end
+
+  def lose?
+    @hands.each do |hand|
+      next if hand.lose?
+
+      return false
+    end
+    true
   end
 end
