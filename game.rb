@@ -234,6 +234,7 @@ NGM
       take_card_scr
       show_info
     when 2
+      go_dealer
       open_cards
       show_cards(game_over: true)
       new_game_menu
