@@ -3,7 +3,7 @@ require_relative 'player'
 require_relative 'dealer'
 
 class Game
-  attr_accessor :player, :dealer, :bank, :deck, :bet, :status
+  attr_accessor :player, :dealer, :bank, :deck, :status
   attr_reader :current_bet
 
   def initialize(player_name, money = 100, deck_count = 1)
@@ -12,7 +12,6 @@ class Game
     @player = Player.new(player_name, money)
     @dealer = Dealer.new
     @players = [@player, @dealer]
-    @bet = 0
     @current_bet = 0
     @status = ''
     set_bet
@@ -31,8 +30,8 @@ class Game
       input = gets.chomp.to_f
       raise ArgumentError, 'Неправильная сумма ставки!' unless input.positive? && input <= @player.balance.to_f
 
-      @bet = input
       @current_bet = input
+      @player.current_hand.bet = input
     rescue StandardError => e
       puts e.message
       retry
@@ -44,16 +43,28 @@ class Game
   end
 
   def status_bar
+    pch = @player.current_hand
+    scr_bet = ''
+    scr_points = ''
     print 'Баланс:['
     print @player.balance.zero? ? "\u001B[31m 0 \u001B[0m" : "\u001B[32m#{@player.balance}\u001B[0m"
     print '] ставка:['
-    print @bet.zero? ? "\u001B[31m#{@na}\u001B[0m" : "\u001B[32m#{@bet}\u001B[0m"
-    print '] Очки:['
-    if @player.hands.first.points.instance_of? Array
-      print "\u001B[32m#{@player.points.max}\u001B[0m"
-    elsif @player.hands.first.points.instance_of? Integer
-      print @player.hands.first.points.zero? ? "\u001B[31m 0 \u001B[0m" : "\u001B[32m#{@player.hands.first.points}\u001B[0m"
+    if @player.splited
+      @player.hands.each do |hand|
+        scr_bet += hand.bet.to_s
+        scr_points += hand.points.to_s
+        next if hand == @player.hands.last
+
+        scr_bet += ' | '
+        scr_points += ' | '
+      end
+    else
+      scr_bet = @player.current_hand.bet.to_s
+      scr_points = @player.current_hand.points
     end
+    print pch.bet.zero? ? "\u001B[31m0\u001B[0m" : "\u001B[32m#{scr_bet}\u001B[0m"
+    print '] Очки:['
+    print scr_points
     print '] Статус:['
     print @status.nil? ? "\u001B[31m#{@status}\u001B[0m" : "\u001B[32m#{@status}\u001B[0m"
     print "]\n"
@@ -62,7 +73,7 @@ class Game
   def can_play?
     raise ArgumentError, 'Недостаточно средств на балансе!' if @player.balance <= 0
 
-    set_bet if @player.balance < @bet
+    set_bet if @player.balance < @current_bet
     true
   rescue StandardError => e
     puts e.message
@@ -71,9 +82,10 @@ class Game
 
   def start_game
     exit unless can_play?
-    @player.balance -= @bet
     @player.refresh
+    @player.current_hand.bet = @current_bet
     @dealer.refresh
+    @player.balance -= @player.current_hand.bet
     puts 'Раздача карт...'
     sleep(0.4)
     2.times do
@@ -90,37 +102,35 @@ class Game
   end
 
   def over?
-
-    @players.each do |player|
-      next unless player.hands.first.lose?
-
-      @status = "Игрок: #{player.name} - проиграл"
-      show_cards
-      return true
-    end
-    false
+    @player.lose?
   end
 
   def hand_full
     @player.current_hand.done!
     if @player.current_hand == @player.hands.last
+      go_dealer
       open_cards
+      show_cards(game_over: true)
     else
       @player.current_hand = @player.hands.last
     end
   end
 
-  def hit
-    @player.add_card @deck.take_card
+  def go_dealer
+    loop do
+      break unless @dealer.hands.first.points < 17
+
+      @dealer.add_card @deck.take_card
+    end
   end
 
-  def winning
-    player_lose = @player.hands.first.lose?
+  def winning(hand)
+    player_lose = hand.lose?
     dealer_lose = @dealer.hands.first.lose?
     if !player_lose && !dealer_lose
-      return @player if @player.hands.first.points > @dealer.hands.first.points
-      return @dealer if @player.hands.first.points < @dealer.hands.first.points
-      return nil if @player.hands.first.points == @dealer.hands.first.points
+      return @player if hand.points > @dealer.hands.first.points
+      return @dealer if hand.points < @dealer.hands.first.points
+      return nil if hand.points == @dealer.hands.first.points
     elsif player_lose
       @dealer
     elsif dealer_lose
@@ -130,16 +140,17 @@ class Game
 
   def give_bank(winner)
     if winner.nil?
-      @player.balance += @bet
-      @status = 'Ничья!'
+      @player.balance += @player.current_hand.bet
+      @status += 'Ничья!'
     else
-      money = @bet * 2
+      money = @player.current_hand.bet * 2
       winner.balance += money
-      @status = winner.instance_of?(Player) ? "Выиграл +#{money}" : "\u001B[31mПроиграл -#{@bet}\u001B[0m"
+      @status += winner.instance_of?(Player) ? "+#{money}" : "-#{@player.current_hand.bet}"
+      @player.current_hand.status = @status
     end
   end
 
-  def show_cards(game_over = false)
+  def show_cards(game_over: false)
     clear
     status_bar
     puts "Карты диллера:\n"
@@ -168,7 +179,7 @@ NGM
   end
 
   def start_new_game
-    @bet = @current_bet
+    @player.current_hand.bet = @current_bet
     @status = ''
     start_game
     clear
@@ -182,25 +193,41 @@ NGM
   end
 
   def take_card_scr
-    hit
+    @player.add_card @deck.take_card
     clear
   end
 
   def open_cards
-    winner = winning
-    give_bank(winner)
-    show_cards(true)
-    new_game_menu
+    @player.hands.each do |hand|
+      winner = winning(hand)
+      give_bank(winner)
+    end
+  end
+
+  def double
+    @player.balance -= @player.current_hand.bet
+    @player.current_hand.bet *= 2
+    take_card_scr
+
+    if @player.lose?
+      @status = 'Проиграл'
+    else
+      go_dealer
+      open_cards
+      show_cards(game_over: true)
+      new_game_menu
+    end
   end
 
   def menu
+    splited = @player.splited
     puts <<~MENU
       1 - Взять карту
       2 - Вскрыть карты
-      3 - Удвоить ставку (+1 карта)
     MENU
+    puts '3 - Удвоить ставку (+1 карта)' unless splited
     puts '4 - Сплит' if @player.can_split?
-    puts '5 - Достаточно' if @player.splited
+    puts '5 - Достаточно' if splited
     input = gets.chomp.to_i
     case input
     when 1
@@ -208,16 +235,16 @@ NGM
       show_info
     when 2
       open_cards
+      show_cards(game_over: true)
+      new_game_menu
     when 3
-      @player.balance -= @main_game.bet
-      @bet *= 2
-      take_card_scr
-      open_cards
+      double unless splited
     when 4
       @player.split
       show_info
     when 5
       hand_full
+      show_info
     end
   end
 end
