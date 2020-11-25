@@ -5,7 +5,7 @@ class Deck
   SUITS = %w[♥ ♦ ♣ ♠].freeze
   CARDS = [*(2..10), 'J', 'Q', 'K', 'A'].freeze
 
-  def initialize(deck_count = 1)
+  def initialize(deck_count = 4)
     @deck_count = deck_count
     new_deck(@deck_count)
   end

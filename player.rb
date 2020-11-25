@@ -52,6 +52,13 @@ class Player
     balance >= bet * 2
   end
 
+  def double
+    return unless can_double?(@current_hand.bet)
+
+    @balance -= @current_hand.bet
+    @current_hand.bet *= 2
+  end
+
   def lose?
     @hands.each do |hand|
       next if hand.lose?
