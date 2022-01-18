@@ -8,7 +8,7 @@ class Game
 
   def initialize(player_name, money = 100, deck_count = 1)
     @na = 'N/a'.to_sym
-    @deck = Deck.new(deck_count)
+    @deck = Deck.new(deck_count: deck_count)
     @player = Player.new(player_name, money)
     @dealer = Dealer.new
     @players = [@player, @dealer]

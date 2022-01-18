@@ -54,8 +54,8 @@ class Hand
     aces_indexes = []
     aces_weight = []
     @cards.each_with_index do |card, index|
-      aces_indexes << index if card.cost == 11
-      @points += card.cost
+      aces_indexes << index if card&.cost == 11
+      @points += card&.cost
     end
     if aces_indexes.empty?
       aces_weight = @points
