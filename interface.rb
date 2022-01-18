@@ -92,7 +92,7 @@ class Interface
       1 - Взять карту
       2 - Вскрыть карты
     MENU
-    puts '3 - Удвоить ставку (+1 карта)' unless splited && @player.can_double?
+    puts '3 - Удвоить ставку (+1 карта)' unless splited && @player.can_double?(@current_hand.bet)
     puts '4 - Сплит' if @player.can_split?
     puts '5 - Достаточно' if splited
     input = gets.chomp.to_i
